@@ -58,6 +58,11 @@ function drawContainer(){
 *******************************************************/
 
 function clickReset(){
+	resetClasses();
+	recalculateClasses();
+}
+
+function resetClasses(){
 	var sections = localStorage.getItem("Sections");
 	if (sections != null){
 		sections = JSON.parse(sections);
@@ -66,12 +71,12 @@ function clickReset(){
 			sections[i].selected = false;
 		}
 		localStorage.setItem("Sections",JSON.stringify(sections));
-		recalculateClasses();
 	}
 }
 
 function clickScheduler(){
 	if ($(".custom_container").css("display") == "none"){
+		resetClasses();
 		redrawCalendar();
 		$(".custom_container").css("display","block");
 		$("#reset").css("display","block");
