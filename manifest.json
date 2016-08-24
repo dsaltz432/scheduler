@@ -1,0 +1,18 @@
+{
+  "manifest_version": 2,
+
+  "name": "scheduler",
+  "description": "Provides a scheduler tool",
+  "version": "1.0",
+
+  "content_scripts": [
+    {
+      "matches": ["https://prd-wlssb.temple.edu/*",
+        "https://tuportal4.temple.edu/render.UserLayoutRootNode.uP?uP_tparam=utf&utf=%2fcp%2fip%2flogin%3fsys%3dsctssb%26url%3dhttps://prd-wlssb.temple.edu/prod8/bwskfcls.p_sel_crse_search"],
+      "js": ["js/utilities.js","js/objects.js","js/jquery.min.js","js/content_script.js"],
+      "css": ["css/CustomStyles.css","css/bootstrap.min.css"]
+      }
+  ]
+
+
+}

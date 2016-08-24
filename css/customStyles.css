@@ -1,0 +1,31 @@
+.custom_container{
+	/*margin-top: 5%;*/
+	border-radius: 15px;
+	 overflow-y: auto;
+}
+.column{
+	border-right: 1px solid #660033;
+	float:left;
+	width:15vw;
+	height:95vh;
+}
+#times_column{
+	/* override .column width to make less wide*/
+	width:8vw;
+	min-width: 50px
+}
+ .day_element {
+ 	text-align: center;
+	border-bottom: 1px solid #660033;
+ }
+ .time {
+ 	 text-align: right;
+ 	 padding-right: 5px;
+ 	 height:4%; 
+ }
+.element{
+	text-align: center;
+	display:inline-block;
+	padding-top: 15%;
+	padding-bottom: 15%;
+}
