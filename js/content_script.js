@@ -99,6 +99,7 @@ function updateSideBar(){
 function clickReset(){
 	resetClasses();
 	recalculateClasses();
+	updateSideBar();
 }
 
 function resetClasses(){
@@ -440,6 +441,7 @@ function clickSectionButton(id){
 		removeItemsFromStorage(sectionId,body);
 		styleAddButtons("#"+id);
 	}
+	updateSideBar();
 }
 
 function getSectionIdOfSectionButton(id){
