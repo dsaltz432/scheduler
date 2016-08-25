@@ -3,29 +3,35 @@
 *******************************************************/
 
 function addSchedulerButton(){
-	var html = "<button id='display' type='button' class='btn btn-primary'>Scheduler</button>";
-	$("body").prepend(html);
+	$("<button>")
+		.attr("id","display")
+		.attr("type","button")
+		.addClass("btn btn-primary")
+		.html("Scheduler")
+		.prependTo("body");
 }
 
 function addResetButton(){
-	var html = "<button id='reset' style='display:none' type='button' class='btn btn-primary'>Reset Schedule</button>";
-	$("body").prepend(html);
+	$("<button>")
+		.attr("id","reset")
+		.attr("type","button")
+		.addClass("btn btn-primary")
+		.html("Reset Schedule")
+		.css("display","none")
+		.prependTo("body");
 }
 
 function addSectionButtons(){
 	var id = 0;
 	$(".ddtitle").each(function(){
-		var html = "<button id='sectionButton"+id+"' type='button' class='sectionButton btn btn-primary'></button>";
-		$(this).append(html);
-		id++;
+		$("<button>")
+			.attr("style","background-image: none !important") // to override Temple's styles
+			.attr("id","sectionButton" + id++)
+			.attr("type","button")
+			.addClass("sectionButton btn btn-primary")
+			.css("margin-left","5%")
+			.appendTo(this);
 	});
-	$(".sectionButton").css("margin-left","5%");
-
-	// overrides Temple's !important on background-image
-	$(".sectionButton").each(function (){
-	    this.style.setProperty('background-image','none','important');
-	});
-
 	styleInitialListingButtons();
 }
 
@@ -132,62 +138,67 @@ function drawTimes(timeBlocks){
 	var timesArr = getTimesArray(timeBlocks);
 	var shifts = {};
 	var yFactor = 4.5;
-	var html = "<div id='times_column' class = 'column'>";
-	html += "<div id='0' class='time'>&nbsp;</div>";
+
+	var times_column = $("<div>")
+		.attr("id","times_column")
+		.addClass("column");
+
+	$("<div>")
+		.attr("id","0")
+		.addClass("time")
+		.html("&nbsp;")
+		.appendTo(times_column);
 
 	for (var i = 0; i < timesArr.length; i++) {
 		var shiftY = yFactor*i;
-
-		// add to shifts to be used to place events vertically
-		shifts[timesArr[i]] = shiftY;
+		shifts[timesArr[i]] = shiftY; // add to shifts to be used to place events vertically
 
 		var id = timesArr[i].split(":")[0]
-		html += "<div id='"+(i+8)+"' class='time' style='transform:translateY("+shiftY+"vh)'>"+timesArr[i]+"</div>";
+		$("<div>")
+			.attr("id",(i+8))
+			.addClass("time")
+			.html(timesArr[i])
+			.css("transform","translateY("+shiftY+"vh)")
+			.appendTo(times_column);
 	}
-	html += "</div></div>";
-	$(".scheduler_container").append(html);
-
+	times_column.appendTo(".scheduler_container");
 	localStorage.setItem("Shifts",JSON.stringify(shifts));
 }
 
 function drawColumns(){
 	var days = ["M","T","W","R","F"];
-	var html = "";
 	for (var i = 0; i < days.length; i++){
-		html += "<div id='"+days[i]+"_column' class='column'>";
-		html += "</div>";
+		$("<div>")
+			.attr("id",days[i]+"_column")
+			.addClass("column")
+			.appendTo(".scheduler_container");
 	}
-	$(".scheduler_container").append(html);
 }
 
 function drawTimeHeaders(){
 	var days = ["M","T","W","R","F"];
 	for (var i = 0; i < days.length; i++){
-		var html = "<div class='day_element'>"+days[i]+"</div>";
-		$("#"+days[i]+"_column").append(html);
+		$("<div>")
+			.addClass("day_element")
+			.html(days[i])
+			.appendTo("#"+days[i]+"_column");
 	}
 }
 
-// buttons not divs
 function drawWeek(timeBlocks){ 
 	for (var i = 0; i < timeBlocks.length; i++){
 		var width = timeBlocks[i].width;
 		var sectionElements = timeBlocks[i].sectionElements;
 		for (var j = 0; j < sectionElements.length; j++){
-			var id = sectionElements[j].id;
 			var time = sectionElements[j].time;
 			var day = time.day;
-			var sectionId = id.split("_").slice(0,3).join("_");
-
-			// check if column already has that child element from different TimeBlock
-			if ($("#"+id).length){ // if no div with that id yet
-				continue; // go to next iteration in loop
-			} 
-
-			var div = "<button class='element "+sectionId+"' id='"+id+"''>";
-			div += sectionId; 
-			div += "</button>"
-			$("#"+day+"_column").append(div);
+			var sectionId = sectionElements[j].id.split("_").slice(0,3).join("_");
+			$("<button>")
+				.addClass("element")
+				.addClass(sectionId)
+				.attr("id",sectionElements[j].id)
+				.html(sectionId)
+				.appendTo("#"+day+"_column");
 		}
 	}
 }
@@ -534,11 +545,11 @@ function removeConflictingSections(sections, clickedSection){
 // it recalculates and redraws the TimeBlocks, but leaves the headers and times column the same
 function recalculateClasses(){
 	var timeBlocks = getTimeBlocks();
-	$("#M_column").html("");
-	$("#T_column").html("");
-	$("#W_column").html("");
-	$("#R_column").html("");
-	$("#F_column").html("");
+	$("#M_column").empty();
+	$("#T_column").empty();
+	$("#W_column").empty();
+	$("#R_column").empty();
+	$("#F_column").empty();
 	drawTimeHeaders();
 	drawWeek(timeBlocks);
 	styleSections();
@@ -548,7 +559,7 @@ function recalculateClasses(){
 // recalculates and redraws the TimeBlocks and the times column 
 // gets called when the calendar is opened and closed
 function redrawCalendar(){
-	$(".scheduler_container").html("");
+	$(".scheduler_container").empty();
 	var timeBlocks = getTimeBlocks();
 	drawTimes(timeBlocks);
 	drawColumns();
@@ -722,13 +733,15 @@ function getSectionTimeObjects(rawTime,days){
 *******************************************************/
 
 function styleAddButtons(selector){
-	$(selector).html("Add");
-	$(selector).css("background-color","red");
+	$(selector)
+		.html("Add")
+		.css("background-color","red");
 }
 
 function styleSelectedButton(id){
-	$("#"+id).html("Selected");
-	$("#"+id).css("background-color","green");
+	$("#"+id)
+		.html("Selected")
+		.css("background-color","green");
 }
 
 
