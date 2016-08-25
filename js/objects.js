@@ -12,7 +12,6 @@ var Section = function(elements,id,buttonId){
 var SectionElement = function(time,id){
 	this.id = id;
 	this.time = time;
-	this.position = 999;
 }
 var SectionTime = function(day,startTime,endTime){
 	this.id = day+"_"+startTime+"_"+endTime;

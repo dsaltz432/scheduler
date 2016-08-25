@@ -1,16 +1,14 @@
-.custom_container{
-	/*margin-top: 5%;*/
+.scheduler_container{
 	border-radius: 15px;
-	 overflow-y: auto;
+	overflow-y: auto;
 }
 .column{
 	border-right: 1px solid #660033;
 	float:left;
-	width:15vw;
+	width:12vw;
 	height:95vh;
 }
 #times_column{
-	/* override .column width to make less wide*/
 	width:8vw;
 	min-width: 50px
 }
@@ -29,3 +27,21 @@
 	padding-top: 15%;
 	padding-bottom: 15%;
 }
+.sideBar{
+	position:fixed;
+	background-color: #66b3ff;
+	border: 3px solid green;
+	width: 150px;
+	height: 85vh;
+	top: 50px;
+	right: 0;
+}
+.sideBarHeader {
+	color:#000099;
+}
+.sideBarList {
+	list-style-type: none;
+	margin: 0;
+	padding: 0;
+}
+

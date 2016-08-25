@@ -23,7 +23,7 @@ function addSectionButtons(){
 
 	// overrides Temple's !important on background-image
 	$(".sectionButton").each(function (){
-	    this.style.setProperty( 'background-image', 'none', 'important' );
+	    this.style.setProperty('background-image','none','important');
 	});
 
 	styleInitialListingButtons();
@@ -44,14 +44,53 @@ function styleInitialListingButtons(){
 	}
 }
 
-function drawContainer(){
-	var html = "<div class='custom_container container-fluid'>";
-	$("body").prepend(html);
-	$(".custom_container").css("position","fixed");
-	$(".custom_container").css("background-color","#99ccff");
-	$(".custom_container").css("display","none");
+function createSchedulerDiv(){
+	$("<div>")
+		.addClass("scheduler_container container-fluid")
+		.css("background-color","cyan")
+		.css("position","fixed")
+		.css("display","none")
+		.prependTo("body");
 }
 
+function drawSideBar(){
+	$("<div>")
+		.addClass("sideBar")
+		.appendTo(".plaintable tbody");
+
+	$("<h3>")
+		.addClass("sideBarHeader")
+		.html("Sections:")
+		.prependTo(".sideBar");
+
+	$("<ul>")
+		.addClass("sideBarList")
+		.appendTo(".sideBar");
+
+	updateSideBar();
+}
+
+function updateSideBar(){
+	$(".sideBarList").empty();
+	var sections = localStorage.getItem("Sections");
+	if (sections != null){
+		sections = JSON.parse(sections);
+		for (var i = 0; i < sections.length; i++){
+			var color = "white";
+			if (sections[i].selected){ 
+				color = "DarkGreen";
+			} else if (sections[i].eliminated){
+				color = "red";
+			}
+			$("<li>")
+				.addClass("sideBarListItem")
+				.attr("id",sections[i].id+"LI")
+				.css("color",color)
+				.html(sections[i].id)
+				.appendTo(".sideBarList");
+		}
+	}
+}
 
 /******************************************************
 	Recalculate TimeBlocks and create new schedule when user clicks "Scheduler"
@@ -75,15 +114,17 @@ function resetClasses(){
 }
 
 function clickScheduler(){
-	if ($(".custom_container").css("display") == "none"){
-		resetClasses();
+	resetClasses();
+	updateSideBar();
+	if ($(".scheduler_container").css("display") == "none"){
 		redrawCalendar();
-		$(".custom_container").css("display","block");
+		$(".scheduler_container").css("display","block");
 		$("#reset").css("display","block");
 	} else{
-		$(".custom_container").css("display","none");
+		$(".scheduler_container").css("display","none");
 		$("#reset").css("display","none");
 	}
+
 }
 
 function drawTimes(timeBlocks){
@@ -103,7 +144,7 @@ function drawTimes(timeBlocks){
 		html += "<div id='"+(i+8)+"' class='time' style='transform:translateY("+shiftY+"vh)'>"+timesArr[i]+"</div>";
 	}
 	html += "</div></div>";
-	$(".custom_container").append(html);
+	$(".scheduler_container").append(html);
 
 	localStorage.setItem("Shifts",JSON.stringify(shifts));
 }
@@ -115,7 +156,7 @@ function drawColumns(){
 		html += "<div id='"+days[i]+"_column' class='column'>";
 		html += "</div>";
 	}
-	$(".custom_container").append(html);
+	$(".scheduler_container").append(html);
 }
 
 function drawTimeHeaders(){
@@ -182,10 +223,8 @@ function adjustElements(timeBlocks){
 			var startTime = String(time.startTime);
 			var endTime = String(time.endTime);
 			var day = time.day;
-			var position = sectionElements[j].position;;
-			// var positionClass = day + "_pos_" + position;
 			var length = getLengthOfElement(startTime,endTime);
-			var shiftY = getShiftY(timeBlocks,position,time,timeBlockId,shifts);
+			var shiftY = getShiftY(timeBlocks,time,timeBlockId,shifts);
 			$("#"+id).css("transform","translateY("+shiftY+"vh)");
 			$("#"+id).css("height",length+"%");
 			$("#"+id).css("width",100*width+"%");
@@ -201,8 +240,8 @@ function getLengthOfElement(startTime,endTime){
 	return 9*length;
 }
 
-function getShiftY(timeBlocks,position,thisTime,thisTimeBlockId,shifts){
-	var lengthBelowElement = getMaxLengthOfDivsBelowElement(timeBlocks,position,thisTime,thisTimeBlockId);
+function getShiftY(timeBlocks,thisTime,thisTimeBlockId,shifts){
+	var lengthBelowElement = getMaxLengthOfDivsBelowElement(timeBlocks,thisTime,thisTimeBlockId);
 	var lengthBelowFactor = .94;
 	var parts = thisTime.startTime.split(":");
 	var evenHour = parts[0] + ":00";
@@ -215,7 +254,7 @@ function getShiftY(timeBlocks,position,thisTime,thisTimeBlockId,shifts){
 	return total;
 }
 
-function getMaxLengthOfDivsBelowElement(timeBlocks,position,thisTime,thisTimeBlockId){
+function getMaxLengthOfDivsBelowElement(timeBlocks,thisTime,thisTimeBlockId){
 	var total = 0;
 	for (var i = 0; i < timeBlocks.length; i++){
 		var sectionElements = timeBlocks[i].sectionElements;
@@ -426,14 +465,17 @@ function clickElement(id){
 	if (index >= 0){
 		if (sections[index].selected == true) { // is elemented being selected or unselected
 			addBackConflictingSections(sections,sections[index]);
+			// removeSectionFromSideBar(sections[index].id);
 			sections[index].selected = false;
 		} else {
 			removeConflictingSections(sections,sections[index]);
+			// addSectionToSideBar(sections[index].id);
 			sections[index].selected = true;
 		}	
 	}
 	localStorage.setItem("Sections",JSON.stringify(sections));
 	recalculateClasses();
+	updateSideBar();
 }
 
 // only sets sections eliminated to false if it does not conflict from a separate section that is "selected"
@@ -504,7 +546,7 @@ function recalculateClasses(){
 // recalculates and redraws the TimeBlocks and the times column 
 // gets called when the calendar is opened and closed
 function redrawCalendar(){
-	$(".custom_container").html("");
+	$(".scheduler_container").html("");
 	var timeBlocks = getTimeBlocks();
 	drawTimes(timeBlocks);
 	drawColumns();
@@ -639,7 +681,6 @@ function addToOrCreateNewCourseObject(sectionObject,courseId){
 	localStorage.setItem("Courses",JSON.stringify(courses));
 }
 
-
 function getSectionObject(sectionElements,sectionId,buttonId){
 	var newSectionObject = new Section(sectionElements,sectionId,buttonId);
 	return newSectionObject;
@@ -674,7 +715,6 @@ function getSectionTimeObjects(rawTime,days){
 	}
 }
 
-
 /******************************************************
 				CSS Functions
 *******************************************************/
@@ -692,7 +732,7 @@ function styleSelectedButton(id){
 
 init();
 	function init() {
-		// console.log("loaded content_script");
+		console.log("loaded content_script");
 
 		// var frame = $(document).find("frame[name='content'] html")[0];
 		// console.log(frame);
@@ -700,8 +740,11 @@ init();
 		// var main = $(".main", top.frames["nav"]);
 		// console.log("main: " + main);
 
+		// var x = $(".datadisplaytable tbody", top.frames["content"]).children();
+		// console.log(x);
 
-		drawContainer();
+		createSchedulerDiv();
+		drawSideBar();
 		addResetButton();
 		addSchedulerButton();
 		addSectionButtons();
