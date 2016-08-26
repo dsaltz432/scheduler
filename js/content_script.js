@@ -8,6 +8,9 @@ function addSchedulerButton(){
 		.attr("type","button")
 		.addClass("btn btn-primary")
 		.html("Scheduler")
+		.css("position","fixed")
+		.css("top","0")
+		.css("left","0")
 		.prependTo("body");
 }
 
@@ -18,6 +21,9 @@ function addResetButton(){
 		.addClass("btn btn-primary")
 		.html("Reset Schedule")
 		.css("display","none")
+		.css("position","fixed")
+		.css("top","0")
+		.css("left","100px")
 		.prependTo("body");
 }
 
@@ -78,25 +84,44 @@ function drawSideBar(){
 
 function updateSideBar(){
 	$(".sideBarList").empty();
+	// var colors = localStorage.getItem("Colors");
 	var sections = localStorage.getItem("Sections");
 	if (sections != null){
 		sections = JSON.parse(sections);
+		// colors = JSON.parse(colors);
 		for (var i = 0; i < sections.length; i++){
-			var color = "white";
+			// var color = colors[sections[i].id];
 			if (sections[i].selected){ 
 				color = "DarkGreen";
+				$("<li>")
+					.addClass("sideBarListItem")
+					.attr("id",sections[i].id+"LI")
+					.css("color",color)
+					.html(sections[i].id)
+					.appendTo(".sideBarList");
 			} else if (sections[i].eliminated){
 				color = "red";
+				$("<li>")
+					.addClass("sideBarListItem")
+					.attr("id",sections[i].id+"LI")
+					.css("color",color)
+					.css("text-decoration", "line-through")
+					.html(sections[i].id)
+					.appendTo(".sideBarList");
+			} else{
+				color = "white";
+				$("<li>")
+					.addClass("sideBarListItem")
+					.attr("id",sections[i].id+"LI")
+					.css("color",color)
+					.html(sections[i].id)
+					.appendTo(".sideBarList");
 			}
-			$("<li>")
-				.addClass("sideBarListItem")
-				.attr("id",sections[i].id+"LI")
-				.css("color",color)
-				.html(sections[i].id)
-				.appendTo(".sideBarList");
+
 		}
 	}
 }
+
 
 /******************************************************
 	Recalculate TimeBlocks and create new schedule when user clicks "Scheduler"
@@ -127,9 +152,11 @@ function clickScheduler(){
 		redrawCalendar();
 		$(".scheduler_container").css("display","block");
 		$("#reset").css("display","block");
+		$(".sectionButton").hide();
 	} else{
 		$(".scheduler_container").css("display","none");
 		$("#reset").css("display","none");
+		$(".sectionButton").show();
 	}
 
 }
@@ -157,7 +184,7 @@ function drawTimes(timeBlocks){
 		$("<div>")
 			.attr("id",(i+8))
 			.addClass("time")
-			.html(timesArr[i])
+			.html(getNonMilitaryTime(timesArr[i]))
 			.css("transform","translateY("+shiftY+"vh)")
 			.appendTo(times_column);
 	}
@@ -204,23 +231,26 @@ function drawWeek(timeBlocks){
 }
 
 function styleSections(){
-	var colors = ["blue","red","green","yellow","orange","purple","pink",
+	var colorsArr = ["blue","red","green","yellow","orange","purple","pink",
 				"lime","teal","aqua","burlywood","chartreuse","coral",
 				"crimson","greenyellow"];
+	var colors = {};
 	var sections = JSON.parse(localStorage.getItem("Sections"));
 	if (sections != null){
 		for (var i = 0; i < sections.length; i++){
 			var sectionId = sections[i].id;
-			var color = colors[i];
+			var color = colorsArr[i];
 			$("."+sectionId).css("background-color",color);
 			$("."+sectionId).css("border-radius","7px");
 			$("."+sectionId).css("color","white");
+			colors[sectionId] = color;
 
 			if (sections[i].selected){
 				$("."+sectionId).css("border-width","7px");
 			}
 		}
 	}
+	localStorage.setItem("Colors",JSON.stringify(colors));
 }
 
 function adjustElements(timeBlocks){
@@ -400,18 +430,17 @@ function getSectionElementsInSectionTime(sections,time){
 	var end = getTimeAsNumber(time.endTime);
 	var day = time.day;
 	var list = [];
-
 	for (var i = 0; i < sections.length; i++) {
 		for (var j = 0; j < sections[i].elements.length; j++){
 			var t = sections[i].elements[j].time;
 			var elementStart = getTimeAsNumber(t.startTime);
 			var elementEnd = getTimeAsNumber(t.endTime);
 
-			if (((elementStart > start && elementStart < end)  // startTime conflicts
-					|| (elementEnd < end && elementEnd > start) // endTime conflicts
-					|| (elementStart < start && elementEnd > end) // both start and end conflicts
-					|| (elementEnd == end && elementStart == start)) // or just be the exact same start and end time
-					&& (day == t.day)){ // must be the same day 
+			if (day == t.day && // must be the same day 
+					// AND one of the following conflict conditions must be true
+					   ((elementStart >= start && elementStart < end)
+					|| (elementEnd <= end && elementEnd > start)
+					|| (elementStart <= start && elementEnd >= end))){ 
 				list.push(sections[i].elements[j]);
 			}
 		}
@@ -527,10 +556,12 @@ function addBackConflictingSections(sections, clickedSection){
 function removeConflictingSections(sections, clickedSection){
 	for (var i = 0; i < clickedSection.elements.length; i++){
 		var time = clickedSection.elements[i].time;
+		// console.log("TESTING: " + )
 		var conflictingElements = getSectionElementsInSectionTime(sections,time);
-
+		// console.log(conflictingElements.length);
 		for (var x = 0; x < conflictingElements.length; x++){
 			var sectionId = conflictingElements[x].id.split("_").slice(0,3).join("_");
+			// console.log(sectionId);
 			for (z = 0; z < sections.length; z++){
 				if (sectionId == sections[z].id && sectionId != clickedSection.id){
 					sections[z].eliminated = true;
@@ -743,7 +774,6 @@ function styleSelectedButton(id){
 		.html("Selected")
 		.css("background-color","green");
 }
-
 
 init();
 	function init() {

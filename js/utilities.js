@@ -104,3 +104,15 @@ function getIndexIfInSectionTimeExists(time, sectionTimes){
 	}
 	return -1;
 }
+
+// takes a military time string, returns a non military time string
+function getNonMilitaryTime(militaryTime){
+	var t = militaryTime.split(":");
+	var hour = parseInt(t[0]);
+	var minutes = t[1];
+
+	if (hour > 12){
+		hour -= 12;
+	}
+	return String(hour) + ":" + minutes;
+}
